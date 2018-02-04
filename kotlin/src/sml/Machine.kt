@@ -1,9 +1,6 @@
 package sml
 
-import sml.instructions.AddInstruction
-import sml.instructions.LinInstruction
-import sml.instructions.MultiInstruction
-import sml.instructions.NoOpInstruction
+import sml.instructions.*
 import java.io.File
 import java.io.IOException
 import java.util.Scanner
@@ -118,6 +115,12 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
                 s1 = scanInt()
                 s2 = scanInt()
                 MultiInstruction(label, r, s1, s2)
+            }
+            "sub" -> {
+                r = scanInt()
+                s1 = scanInt()
+                s2 = scanInt()
+                SubInstruction(label, r, s1, s2)
             }
 
         // You will have to write code here for the other instructions
