@@ -11,14 +11,9 @@ class AddInstruction(label: String, val result: Int, val op1: Int, val op2: Int)
 
     override fun execute(m: Machine) {
 
-        // Code provided was returning wrong results...
-
-        //val value1 = m.registers.getRegister(op1)
-        //val value2 = m.registers.getRegister(op2)
-
-        //val total = value1 + value2
-
-        m.registers.setRegister(result, op1 + op2)
+        val value1 = m.registers.getRegister(op1)
+        val value2 = m.registers.getRegister(op2)
+        m.registers.setRegister(result, value1 + value2)
     }
 
     override fun toString(): String {

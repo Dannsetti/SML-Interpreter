@@ -128,7 +128,10 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
                 s2 = scanInt()
                 DivInstruction(label, r, s1, s2)
             }
-            "out" -> TODO()
+            "out" -> {
+                s1 = scanInt()
+                OutInstruction(label, s1)
+            }
 
         // You will have to write code here for the other instructions
             else -> {

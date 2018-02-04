@@ -1,6 +1,5 @@
-f0 mul 10 10 40
-f1 mul 3 2 10
-f2 mul 0 7 2
-f3 mul 8 10 4
-f4 mul 5 1 5
-f5 mul 4 3 10
+f0 lin 10 10
+f1 lin 3 20
+f2 mul 1 10 3
+f3 mul 30 1 10
+
