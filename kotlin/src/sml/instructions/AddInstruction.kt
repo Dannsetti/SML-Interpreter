@@ -10,9 +10,15 @@ import sml.Machine
 class AddInstruction(label: String, val result: Int, val op1: Int, val op2: Int) : Instruction(label, "add") {
 
     override fun execute(m: Machine) {
-        val value1 = m.registers.getRegister(op1)
-        val value2 = m.registers.getRegister(op2)
-        m.registers.setRegister(result, value1 + value2)
+
+        // Code provided was returning wrong results...
+
+        //val value1 = m.registers.getRegister(op1)
+        //val value2 = m.registers.getRegister(op2)
+
+        //val total = value1 + value2
+
+        m.registers.setRegister(result, op1 + op2)
     }
 
     override fun toString(): String {
