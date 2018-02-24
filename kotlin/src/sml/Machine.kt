@@ -1,15 +1,20 @@
 package sml
 
-import sml.instructions.*
+//import jdk.tools.jlink.internal.plugins.ClassForNamePlugin
+import sml.instructions.AddInstruction
+import sml.instructions.LinInstruction
+//import sun.plugin2.liveconnect.JavaClass
 import java.io.File
 import java.io.IOException
-import java.util.Scanner
-import kotlin.collections.ArrayList
-import kotlin.math.sign
+import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KMutableProperty
+import kotlin.collections.ArrayList
+import kotlin.reflect.KCallable
+import kotlin.reflect.KFunction
+import kotlin.reflect.KTypeParameter
 import kotlin.reflect.full.*
 import kotlin.reflect.jvm.*
+
 
 /*
  * The machine language interpreter
@@ -93,108 +98,127 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
         }
     }
 
-   /* fun <T : Any> addd(kclass: KClass<T>): Instruction {
-        val label = scan()
-        val r = scanInt()
-        val s1 = scanInt()
-        val s2 = scanInt()
-        return AddInstruction(label, r, s1, s2)
 
-    }*/
 
-    // A few tests for study purpose
-    val name = "George"
-    val kclass1: KClass<String> = name::class as KClass<String>
-    val kclass2: KClass<String> = String::class
 
-    val kclass3 = println(Class.forName("sml.instructions.AddInstruction").kotlin)
+    fun getInstruction(label: String): Instruction {
 
-    fun <T : Any> printConstructors(kclass: KClass<T>) {
-        kclass.constructors.forEach {
-            println(it.parameters)
+
+        val ins = scan()
+
+        val kclass = Class.forName("sml.instructions." + ins.capitalize() + "Instruction").kotlin
+
+        println(kclass.qualifiedName)
+
+
+        val lll = ArrayList<Any>()
+
+        lll.add(label)
+
+        println("lll with label " + lll)
+
+        kclass.declaredMemberProperties.forEach { i ->
+            if (i.returnType.toString() == "kotlin.Int") {
+                val tm = scanInt()
+                lll.add(tm)
+            } else {
+                val tm1 = scan()
+                lll.add(tm1)
+            }
         }
+
+        val arr = lll.toArray()
+
+
+        val linConst = kclass.constructors.find { it.parameters.size > 0 } ?: throw RuntimeException("No compatible constructor")
+
+
+        return linConst.call(*arr) as Instruction
+
     }
 
     /**
      * line should consist of an MML instruction, with its label already removed.
      * Translate line into an instruction with label label and return the instruction
      */
-    fun getInstruction(label: String): Instruction {
-        val s1: Int // Possible operands of the instruction
-        val s2: Int
-        val r: Int
-        val l2: String
-
-
-        // Instructions classes constructions to replace the explict call inse of the switch
-
-        val addConst = AddInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
-        val linConst = LinInstruction::class.constructors.find { it.parameters.size == 3 } ?: throw RuntimeException("No compatible constructor")
-        val mulConst = MultiInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
-        val subConst = SubInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
-        val divConst = DivInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
-        val outConst = OutInstruction::class.constructors.find { it.parameters.size == 2 } ?: throw RuntimeException("No compatible constructor")
-        val bnzConst = BnzInstruction::class.constructors.find { it.parameters.size == 3 } ?: throw RuntimeException("No compatible constructor")
-        val noOpConst = NoOpInstruction::class.constructors.find { it.parameters.size == 2 } ?: throw RuntimeException("No compatible constructor")
-
-        val ins = scan()
-
-        return when (ins) { // replace with reflection
-            "add" -> {
-                /*r = scanInt()
-                s1 = scanInt()
-                s2 = scanInt()
-                //val p = printConstructors()
-                AddInstruction(label, r, s1, s2)*/
-                addConst.call(label, scanInt(), scanInt(), scanInt())
-
-            }
-            "lin" -> {
-                //r = scanInt()
-                //s1 = scanInt()
-                //LinInstruction(label, r, s1)
-                linConst.call(label, scanInt(), scanInt())
-            }
-            "mul" -> {
-                //r = scanInt()
-                //s1 = scanInt()
-                //s2 = scanInt()
-                //MultiInstruction(label, r, s1, s2)
-                mulConst.call(label, scanInt(), scanInt(), scanInt())
-            }
-            "sub" -> {
-                //r = scanInt()
-                //s1 = scanInt()
-                //s2 = scanInt()
-                //SubInstruction(label, r, s1, s2)
-                subConst.call(label, scanInt(), scanInt(), scanInt())
-            }
-            "div" -> {
-                //r = scanInt()
-                //s1 = scanInt()
-                //s2 = scanInt()
-                //DivInstruction(label, r, s1, s2)
-                divConst.call(label, scanInt(), scanInt(), scanInt())
-            }
-            "out" -> {
-                //s1 = scanInt()
-                //OutInstruction(label, s1)
-                outConst.call(label, scanInt())
-            }
-            "bnz" -> {
-                //s1 = scanInt()
-                //l2 = scan()
-                //BnzInstruction(label, s1, l2)
-                bnzConst.call(label, scanInt(), scan())
-            }
-
-        // You will have to write code here for the other instructions
-            else -> {
-                //NoOpInstruction(label, line)
-                noOpConst.call(label, line)
-            }
-        }
-    }
+//    fun getInstruction(label: String): Instruction {
+//        val s1: Int // Possible operands of the instruction
+//        val s2: Int
+//        val r: Int
+//        val l2: String
+//
+//        println(getInstructions(label))
+//
+//
+//        // Instructions classes constructions to replace the explict call inse of the switch
+//
+//        val addConst = AddInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
+//        val linConst = LinInstruction::class.constructors.find { it.parameters.size == 3 } ?: throw RuntimeException("No compatible constructor")
+//        val mulConst = MultiInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
+//        val subConst = SubInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
+//        val divConst = DivInstruction::class.constructors.find { it.parameters.size == 4 } ?: throw RuntimeException("No compatible constructor")
+//        val outConst = OutInstruction::class.constructors.find { it.parameters.size == 2 } ?: throw RuntimeException("No compatible constructor")
+//        val bnzConst = BnzInstruction::class.constructors.find { it.parameters.size == 3 } ?: throw RuntimeException("No compatible constructor")
+//        val noOpConst = NoOpInstruction::class.constructors.find { it.parameters.size == 2 } ?: throw RuntimeException("No compatible constructor")
+//
+//        val ins = scan()
+//
+//        return when (ins) { // replace with reflection
+//            "add" -> {
+//                //r = scanInt()
+//                //s1 = scanInt()
+//                //s2 = scanInt()
+//                //val p = printConstructors()
+//                //AddInstruction(label, r, s1, s2)*//*
+//                addConst.call(label, scanInt(), scanInt(), scanInt())
+//
+//            }
+//            "lin" -> {
+//                //r = scanInt()
+//                //s1 = scanInt()
+//                //LinInstruction(label, r, s1)
+//                linConst.call(label, scanInt(), scanInt())
+//            }
+//            "mul" -> {
+//                //r = scanInt()
+//                //s1 = scanInt()
+//                //s2 = scanInt()
+//                //MultiInstruction(label, r, s1, s2)
+//                mulConst.call(label, scanInt(), scanInt(), scanInt())
+//            }
+//            "sub" -> {
+//                //r = scanInt()
+//                //s1 = scanInt()
+//                //s2 = scanInt()
+//                //SubInstruction(label, r, s1, s2)
+//                subConst.call(label, scanInt(), scanInt(), scanInt())
+//            }
+//            "div" -> {
+//                //r = scanInt()
+//                //s1 = scanInt()
+//                //s2 = scanInt()
+//                //DivInstruction(label, r, s1, s2)
+//                divConst.call(label, scanInt(), scanInt(), scanInt())
+//            }
+//            "out" -> {
+//                //s1 = scanInt()
+//                //OutInstruction(label, s1)
+//                outConst.call(label, scanInt())
+//            }
+//            "bnz" -> {
+//                //s1 = scanInt()
+//                //l2 = scan()
+//                //BnzInstruction(label, s1, l2)
+//                bnzConst.call(label, scanInt(), scan())
+//            }
+//
+//        // You will have to write code here for the other instructions
+//            else -> {
+//                //NoOpInstruction(label, line)
+//                noOpConst.call(label, line)
+//            }
+//        }
+//    }
 
     /*
      * Return the first word of line and remove it from line. If there is no
