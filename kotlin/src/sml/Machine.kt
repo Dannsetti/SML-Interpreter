@@ -1,19 +1,10 @@
 package sml
 
-//import jdk.tools.jlink.internal.plugins.ClassForNamePlugin
-import sml.instructions.AddInstruction
-import sml.instructions.LinInstruction
-//import sun.plugin2.liveconnect.JavaClass
 import java.io.File
 import java.io.IOException
 import java.util.*
-import kotlin.reflect.KClass
 import kotlin.collections.ArrayList
-import kotlin.reflect.KCallable
-import kotlin.reflect.KFunction
-import kotlin.reflect.KTypeParameter
 import kotlin.reflect.full.*
-import kotlin.reflect.jvm.*
 
 
 /*
@@ -106,34 +97,39 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
 
         val ins = scan()
 
+        // get class by its name
         val kclass = Class.forName("sml.instructions." + ins.capitalize() + "Instruction").kotlin
 
-        println(kclass.qualifiedName)
+        //println(kclass.qualifiedName)
 
+        // Empty array to collect the classes parameters
+        val paramArray = ArrayList<Any>()
 
-        val lll = ArrayList<Any>()
+        // label added to array as it is a common constructor to all the classes
+        paramArray.add(label)
 
-        lll.add(label)
+        //println("lll with label " + lll)
 
-        println("lll with label " + lll)
-
-        kclass.declaredMemberProperties.forEach { i ->
-            if (i.returnType.toString() == "kotlin.Int") {
-                val tm = scanInt()
-                lll.add(tm)
+        // Loop to the declared properties members of the class selected to build the arg array depending on the
+        //   class return type
+        kclass.declaredMemberProperties.forEach { p ->
+            if (p.returnType.toString() == "kotlin.Int") {
+                val tmp = scanInt()
+                paramArray.add(tmp)
             } else {
-                val tm1 = scan()
-                lll.add(tm1)
+                val tmp1 = scan()
+                paramArray.add(tmp1)
             }
         }
 
-        val arr = lll.toArray()
+        // Cast ArrayList to Array
+        val finalArgsArray = paramArray.toArray()
+
+        // Command to find the selected class parameters to be called
+        val kclassCaller = kclass.constructors.find { it.parameters.isNotEmpty() } ?: throw RuntimeException("No compatible constructor")
 
 
-        val linConst = kclass.constructors.find { it.parameters.size > 0 } ?: throw RuntimeException("No compatible constructor")
-
-
-        return linConst.call(*arr) as Instruction
+        return kclassCaller.call(*finalArgsArray) as Instruction
 
     }
 
