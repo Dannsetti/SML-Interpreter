@@ -1,10 +1,14 @@
 package sml
 
+import sml.instructions.BnzInstruction
+import sml.instructions.NoOpInstruction
 import java.io.File
 import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.reflect.KClass
 import kotlin.reflect.full.*
+import kotlin.reflect.jvm.jvmName
 
 
 /*
@@ -89,18 +93,51 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
         }
     }
 
+    fun isClassCallable(string: String): Boolean {
+        try {
+            Class.forName(string).kotlin
+        } catch (ex: ClassNotFoundException) {
+            println("It broke!")
+            return false
+        }
+        return true
+    }
 
+    /*fun getSpy(c: Class<*>): Spy {
+        return Spy(c)
+    }
 
+    @Throws(ClassNotFoundException::class)
+    fun getSpy(className: String) {
+        return Spy(className)
+    }
+
+    @Throws(ClassNotFoundException::class)
+    private constructor(className: Class<*>) : this(Class.forName(className.canonicalName)) {
+    }*/
 
     fun getInstruction(label: String): Instruction {
 
 
         val ins = scan()
 
+
         // get class by its name
+        try {
+            Class.forName("sml.instructions." + ins.capitalize() + "Instruction").kotlin.toString()
+        }catch (e: ClassNotFoundException) {
+            return NoOpInstruction(label, line)
+        }
+
         val kclass = Class.forName("sml.instructions." + ins.capitalize() + "Instruction").kotlin
 
-        //println(kclass.qualifiedName)
+
+
+        println("class " + kclass.qualifiedName)
+
+        println("coonns " + kclass.constructors)
+
+        println("beleza " + kclass.declaredMemberProperties.forEach { e -> println("here " + e.returnType)})
 
         // Empty array to collect the classes parameters
         val paramArray = ArrayList<Any>()
@@ -112,22 +149,50 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
 
         // Loop to the declared properties members of the class selected to build the arg array depending on the
         //   class return type
+        var counter = 0
         kclass.declaredMemberProperties.forEach { p ->
+            println("pRet " + p.returnType)
             if (p.returnType.toString() == "kotlin.Int") {
-                val tmp = scanInt()
-                paramArray.add(tmp)
+                if (kclass.toString() == "class sml.instructions.BnzInstruction") {
+                    val specialGetStrCase = scan()
+                    paramArray.add(specialGetStrCase)
+                    counter += 1
+                } else {
+                    println("rddd " + p.returnType.toString())
+                    val tmp = scanInt()
+                    println("tmp " + tmp)
+                    paramArray.add(tmp)
+                    println("arr " + paramArray)
+                    counter += 1
+                }
             } else {
-                val tmp1 = scan()
-                paramArray.add(tmp1)
+                if (counter == 0 && kclass.toString() == "class sml.instructions.BnzInstruction") {
+                    val specialGetIntCase = scanInt()
+                    paramArray.add(specialGetIntCase)
+                    counter += 1
+                }
+                else if (kclass.toString() == "class sml.instructions.NoOpInstruction") {
+                    val specialCaseLine = line
+                    paramArray.add(specialCaseLine)
+                    counter += 1
+                } else {
+                    val tmp1 = scan()
+                    println("tmp1 " + tmp1)
+
+                    paramArray.add(tmp1.toString())
+                    println("arr1 " + paramArray)
+                    counter += 1
+                }
             }
         }
+
 
         // Cast ArrayList to Array
         val finalArgsArray = paramArray.toArray()
 
+
         // Command to find the selected class parameters to be called
         val kclassCaller = kclass.constructors.find { it.parameters.isNotEmpty() } ?: throw RuntimeException("No compatible constructor")
-
 
         return kclassCaller.call(*finalArgsArray) as Instruction
 

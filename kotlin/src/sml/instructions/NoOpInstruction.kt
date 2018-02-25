@@ -3,7 +3,7 @@ package sml.instructions
 import sml.Instruction
 import sml.Machine
 
-class NoOpInstruction(label: String, val line:String): Instruction(label, "NoOp") {
+class NoOpInstruction(label: String, val line: String): Instruction(label, "NoOp") {
     override fun execute(m: Machine) {
     }
 
