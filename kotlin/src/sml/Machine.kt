@@ -121,14 +121,19 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
         paramArray.add(label)
 
 
-        // Loop to the declared properties members of the class selected to build the arg array depending on the
-        //   class return type
+        // Loop to the declared member properties of the selected class to build the arg array depending on its
+        //   return type
 
+        // For some unknown reasons BznInstruction was looking first for a String instead of Int.
+        //  so I had to add some extra lines to handle this "Special Case"
         var counter = 0
+
         kclass.declaredMemberProperties.forEach { p ->
 
             if (p.returnType.toString() == "kotlin.Int") {
+
                 if (kclass.toString() == "class sml.instructions.BnzInstruction") {
+
                     val specialGetStrCase = scan()
                     paramArray.add(specialGetStrCase)
                     counter += 1
@@ -147,12 +152,12 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
                     counter += 1
                 }
 
-                else if (kclass.toString() == "class sml.instructions.NoOpInstruction") {
+                /*else if (kclass.toString() == "class sml.instructions.NoOpInstruction") {
                     val specialCaseLine = line
                     paramArray.add(specialCaseLine)
                     counter += 1
 
-                } else {
+                }*/ else {
                     val tmp1 = scan()
                     paramArray.add(tmp1.toString())
                     counter += 1
