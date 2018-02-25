@@ -1,14 +1,11 @@
 package sml
 
-import sml.instructions.BnzInstruction
 import sml.instructions.NoOpInstruction
 import java.io.File
 import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.reflect.KClass
 import kotlin.reflect.full.*
-import kotlin.reflect.jvm.jvmName
 
 
 /*
@@ -104,13 +101,15 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
         val ins = scan()
 
 
-        // get class by its name
+        // get class by its name and verify whether it existis or not
         try {
             Class.forName("sml.instructions." + ins.capitalize() + "Instruction").kotlin.toString()
         }catch (e: ClassNotFoundException) {
+            // if not it return the appropriate class to handle the situation
             return NoOpInstruction(label, line)
         }
 
+        // If the class is available the program get it reflectively
         val kclass = Class.forName("sml.instructions." + ins.capitalize() + "Instruction").kotlin
 
 
@@ -150,17 +149,13 @@ data class Machine(var pc: Int, val noOfRegisters: Int) {
                     val specialGetIntCase = scanInt()
                     paramArray.add(specialGetIntCase)
                     counter += 1
-                }
 
-                /*else if (kclass.toString() == "class sml.instructions.NoOpInstruction") {
-                    val specialCaseLine = line
-                    paramArray.add(specialCaseLine)
-                    counter += 1
+                } else {
 
-                }*/ else {
                     val tmp1 = scan()
                     paramArray.add(tmp1.toString())
                     counter += 1
+
                 }
             }
         }
